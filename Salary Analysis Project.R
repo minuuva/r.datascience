@@ -1,6 +1,6 @@
 # Final Project ---------------------------------------------------------------
 
-## Pre-amble: Any modifications required for your data ________________________
+## Pre-amble: Any modifications required for data ________________________
 setwd("/Users/cmw/Desktop/STAT 1601")
 
 library(tidyverse)
@@ -22,6 +22,7 @@ ds.data$company_size <- factor(ds.data$company_size, levels = c("S", "M", "L"))
 ## Component 1: Base R --------------------------------------------------------
 
 ### Creation of New Variables ----
+# 1
 ds.data$salary_category <- factor(
   ifelse(ds.data$salary_in_usd <= quantile(ds.data$salary_in_usd, 0.25), "Low",
          ifelse(ds.data$salary_in_usd <= median(ds.data$salary_in_usd), "Low-to-Mid",
@@ -29,13 +30,13 @@ ds.data$salary_category <- factor(
                        ifelse(ds.data$salary_in_usd <= max(ds.data$salary_in_usd), "High", "High")))),
   levels = c("Low", "Low-to-Mid", "Mid-to-High", "High"))
 
-#
+# 2
 ds.data$ExchangeRates = ds.data$salary_in_usd / ds.data$salary
 
-#
+# 3
 ds.data$salary_in_euro <- ds.data$salary_in_usd * 0.93
 
-#
+# 4
 cost_of_living_estimate <- c(
   DE = 3000, JP = 3000, GB = 3000, HN = 800, US = 3000, HU = 1500, 
   NZ = 3000, FR = 3000, IN = 800, PK = 800, CN = 1500, GR = 1500,
@@ -52,10 +53,10 @@ ds.data$cost_of_living <- cost_of_living_estimate[as.character(ds.data$company_l
 
 ### EDA with no Subset ----
 
-#
+# 1
 table(ds.data$experience_level, ds.data$company_size)
 
-#
+# 2
 aggregate(salary_in_usd ~ company_size, data = ds.data, FUN = mean)
 #The aggregate() function groups data based on one or more categorical variables
 #and computes summary statistics for each group. The "~" separates the variables
@@ -63,16 +64,16 @@ aggregate(salary_in_usd ~ company_size, data = ds.data, FUN = mean)
 #The data parameter specifies the data frame I'm using, and the FUN = parameter
 #defines the function to be applied in each group of data. 
 
-#
+# 3
 cor(ds.data$remote_ratio, ds.data$salary_in_usd)
 summary(ds.data$remote_ratio)
 summary(ds.data$salary_in_usd)
 
-#
+# 4
 table(ds.data$experience_level)
 
 ### EDA with Subset ----
-# 
+# 1
 fulltime <- subset(ds.data, employment_type == "FT")
 parttime <- subset(ds.data, employment_type == "PT")
 contract <- subset(ds.data, employment_type == "CT")
@@ -83,7 +84,7 @@ print(paste('Average Part Time Salary:', mean(parttime$salary_in_usd)))
 print(paste('Average Contract Salary:', mean(contract$salary_in_usd)))
 print(paste('Average Freelance Salary:', mean(freelance$salary_in_usd)))
 
-# 
+# 2
 location_to_continent <- function(country) {
   continent_map <- c(
     US = "North America", 
@@ -107,7 +108,7 @@ location_to_continent <- function(country) {
 ds.data$continent <- sapply(ds.data$company_location, location_to_continent)
 
 table(ds.data$continent)
-#By using table() function, I realized that there are five different continents. 
+
 europe <- ds.data[ds.data$continent == "Europe", ]
 asia <- ds.data[ds.data$continent == "Asia", ]
 North_America <- ds.data[ds.data$continent == "North America", ]
@@ -120,7 +121,7 @@ average_remote_ratio_NA <- mean(North_America$remote_ratio, na.rm = TRUE) #77.53
 average_remote_ratio_OCE <- mean(Oceania$remote_ratio, na.rm = TRUE) #83.33
 average_remote_ratio_SA <- mean(South_America$remote_ratio, na.rm = TRUE) #33.333
 
-# 
+# 3
 salary2020 <- subset(ds.data, work_year == 2020)
 summary(salary2020$salary_in_usd)
 salary2021 <- subset(ds.data, work_year == 2021)
@@ -128,7 +129,7 @@ summary(salary2021$salary_in_usd)
 salary2022 <- subset(ds.data, work_year == 2022)
 summary(salary2022$salary_in_usd)
 
-# 
+# 4
 entry_level_data <- ds.data[ds.data$experience_level == "Entry", ]
 average_salary_by_continent <- aggregate(salary_in_usd ~ continent, 
                                          data = entry_level_data, FUN = mean)
@@ -277,7 +278,7 @@ ggplot(data = ds.data, mapping = aes(x = year, y = salary_in_usd))+
 ## Component 3: Tidyverse -----------------------------------------------------
 
 ### Creation of New Variables -------------------------------------------------
-# 
+# 1
 ds.data <- ds.data |>
   mutate(salary_category = case_when(
     salary_in_usd <= quantile(salary_in_usd, 0.25) ~ "Low",
@@ -288,14 +289,14 @@ ds.data <- ds.data |>
   mutate(salary_category = factor(salary_category, 
                                   levels = c("Low", "Low-to-Mid", "Mid-to-High", "High")))
 
-# 
+# 2
 ds.data <- ds.data |>
   mutate(ExchangeRates = salary_in_usd / salary)
 
-# 
+# 3
 ds.data <- mutate(ds.data, salary_in_euro = salary_in_usd * 0.93)
 
-# 
+# 4
 cost_of_living_estimate <- c(
   DE = 3000, JP = 3000, GB = 3000, HN = 800, US = 3000, HU = 1500, 
   NZ = 3000, FR = 3000, IN = 800, PK = 800, CN = 1500, GR = 1500,
@@ -314,16 +315,16 @@ ds.data<- ds.data |>
          cost_of_living = if_else(is.na(cost_of_living), mean(cost_of_living_estimate, na.rm = TRUE), cost_of_living))
 
 ### EDA with no Subset --------------------------------------------------------
-# 
+# 1
 ds.data |>
   count(experience_level, company_size)
 
-# 
+# 2
 ds.data|>
   group_by(company_size) |>
   summarize(mean_salary = mean(salary_in_usd))
 
-# 
+# 3
 ds.data |> 
   group_by(work_year) |> 
   summarize(
@@ -335,26 +336,26 @@ ds.data |>
     sd.salary = sd(salary_in_usd, na.rm = T)
   )
 
-# 
+# 4
 ds.data |>
   count(experience_level) |>
   arrange(desc(n))  
 
 ### EDA with Subset -----------------------------------------------------------
-# 
+# 1
 ds.data |>
   filter(employment_type %in% c("FT", "PT", "CT", "FL")) |>
   group_by(employment_type) |>
   summarise(Average_Salary = mean(salary_in_usd, na.rm = TRUE))
 
-# 
+# 2
 ds.data |>
   mutate(continent = sapply(company_location, location_to_continent)) |> 
   filter(!is.na(continent)) |>
   group_by(continent) |>
   summarize(average_remote_ratio = mean(remote_ratio, na.rm = TRUE))
 
-# 
+# 3
 ds.data |>
   group_by(work_year) |> 
   select(salary_in_usd) |>
@@ -363,7 +364,7 @@ ds.data |>
     med.salary = median(salary_in_usd, na.rm = T),
     sd.salary = sd(salary_in_usd, na.rm = T))
 
-# 
+# 4
 entry_level_data <- ds.data |>
   filter(experience_level == "Entry")
 
